@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#081018" />
+  <title>Panel Control Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-orbit bg-orbit-one" aria-hidden="true"></div>
+  <div class="bg-orbit bg-orbit-two" aria-hidden="true"></div>
+
+  <main class="app-shell">
+    <header class="panel hero">
+      <div>
+        <p class="kicker">Admin control surface</p>
+        <h1>Panel Control Studio</h1>
+        <p class="subtitle">
+          Connect a public admin panel URL, inspect users, send direct messages, run broadcasts,
+          and sync BC.GAME data from one browser page.
+        </p>
+        <div class="hero-meta">
+          <span class="pill">Telegram bot</span>
+          <span class="pill">Admin API</span>
+          <span class="pill">GitHub Pages</span>
+        </div>
+      </div>
+
+      <div class="connect-card">
+        <label>
+          Admin panel URL
+          <input id="apiBase" type="url" placeholder="https://your-panel-url.example" />
+        </label>
+        <label>
+          Admin key
+          <input id="adminKey" type="password" placeholder="Enter your panel key" />
+        </label>
+        <div class="connect-actions">
+          <button id="connectButton" class="btn primary">Connect</button>
+          <button id="saveButton" class="btn ghost">Save</button>
+        </div>
+        <p class="status" id="connectionStatus">Not connected</p>
+      </div>
+    </header>
+
+    <section class="metrics-grid" id="metricsGrid" aria-live="polite"></section>
+
+    <section class="panel chat-panel">
+      <div class="section-head chat-head">
+        <div>
+          <p class="kicker">Chat</p>
+          <h2>Command Assistant</h2>
+        </div>
+        <div class="filter-hint">Try: “show stats”, “refresh 12345”, “broadcast hello”</div>
+      </div>
+      <div class="chat-window" id="chatWindow" aria-live="polite"></div>
+      <div class="chat-input-row">
+        <input id="chatInput" type="text" placeholder="Type a command in plain language..." />
+        <button id="chatSendButton" class="btn primary">Send</button>
+      </div>
+      <div class="chat-suggestions" id="chatSuggestions">
+        <button type="button" class="chip" data-chat-suggestion="show stats">show stats</button>
+        <button type="button" class="chip" data-chat-suggestion="show users">show users</button>
+        <button type="button" class="chip" data-chat-suggestion="refresh 123456">refresh 123456</button>
+        <button type="button" class="chip" data-chat-suggestion="send message to 123456 hello">send message</button>
+        <button type="button" class="chip" data-chat-suggestion="broadcast hello everyone">broadcast</button>
+        <button type="button" class="chip" data-chat-suggestion="sync all users">sync users</button>
+      </div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel controls">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Commands</p>
+            <h2>Live actions</h2>
+          </div>
+          <button id="refreshButton" class="btn ghost small">Refresh</button>
+        </div>
+
+        <div class="field-row">
+          <label>
+            Search users
+            <input id="searchInput" type="search" placeholder="UID, username, email, or tag" />
+          </label>
+          <button id="searchButton" class="btn ghost">Search</button>
+        </div>
+
+        <div class="field-row three-up">
+          <label>
+            Target UID
+            <input id="targetUid" type="text" placeholder="BC.GAME UID" />
+          </label>
+          <label>
+            Action note
+            <input id="actionNote" type="text" placeholder="Optional note" />
+          </label>
+          <button id="syncButton" class="btn ghost">Sync Users</button>
+        </div>
+
+        <div class="control-grid">
+          <label class="wide">
+            Direct message
+            <textarea id="directMessage" rows="4" placeholder="Type a message to send to the selected UID"></textarea>
+          </label>
+          <label class="wide">
+            Broadcast message
+            <textarea id="broadcastText" rows="4" placeholder="Type a broadcast message for all users"></textarea>
+          </label>
+        </div>
+
+        <div class="connect-actions stacked-mobile">
+          <button id="sendButton" class="btn primary">Send Message</button>
+          <button id="markDoneButton" class="btn ghost">Mark Done</button>
+          <button id="broadcastButton" class="btn danger">Start Broadcast</button>
+        </div>
+
+        <p class="status" id="actionStatus">Waiting for input</p>
+      </article>
+
+      <aside class="panel feed">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Broadcast</p>
+            <h2>Job feed</h2>
+          </div>
+        </div>
+        <pre id="jobFeed" class="job-feed">No job running yet.</pre>
+        <div class="mini-log" id="activityLog"></div>
+      </aside>
+    </section>
+
+    <section class="panel users-panel">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Directory</p>
+          <h2>Users</h2>
+        </div>
+        <div class="filter-hint" id="userCount">0 users loaded</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>UID</th>
+              <th>User</th>
+              <th>Level</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersBody">
+            <tr><td colspan="5" class="empty-state">Connect to load users.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,3 +1,0 @@
-aiosqlite
-aiohttp
-python-telegram-bot
