@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BC.GAME - Profile</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js" onerror="window.Telegram={WebApp:{expand:()=>{},enableClosingConfirmation:()=>{},sendData:()=>{},close:()=>{}}}"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" onerror="console.warn('Google Fonts failed to load, using system fonts')">
     <style>
         * {
             margin: 0;
@@ -785,8 +785,8 @@
 
                     <!-- Avatar -->
                     <div class="avatar-container">
-                        <img id="avatar" class="avatar" src="" alt="">
-                        <img class="avatar-frame" src="https://bcgame.st/assets/active/frame/4.png" alt="">
+                        <img id="avatar" class="avatar" src="" alt="User Avatar">
+                        <img class="avatar-frame" src="https://bcgame.st/assets/active/frame/4.png" alt="" onerror="this.style.display='none'">
                     </div>
 
                     <!-- VIP Badge -->
@@ -875,7 +875,7 @@
                     <div class="bonus-content">
                         <h2 class="bonus-title">Claim Your Bonus</h2>
                         <div class="bonus-image">
-                            <img src="https://bcgame.st/substation/bc/bonus/bonus/welcome-page/perk-quest.png" alt="Bonus">
+                            <img src="https://bcgame.st/substation/bc/bonus/bonus/welcome-page/perk-quest.png" alt="Bonus" onerror="this.style.display='none'">
                         </div>
                     </div>
                     <p id="bonus-text-display" class="bonus-text">
@@ -1130,9 +1130,18 @@
                 
                 const img = document.createElement('img');
                 img.src = `${MEDAL_BASE}${type}.png`;
-                img.onerror = function() {
-                    this.parentElement.style.display = 'none';
-                };
+                
+                // Use a function to create a proper closure
+                img.onerror = (function(medalDiv, earned) {
+                    return function() {
+                        // Replace image with emoji fallback
+                        medalDiv.innerHTML = earned ? '🏅' : '🔒';
+                        medalDiv.style.fontSize = '24px';
+                        medalDiv.style.display = 'flex';
+                        medalDiv.style.alignItems = 'center';
+                        medalDiv.style.justifyContent = 'center';
+                    };
+                })(div, isEarned);
                 
                 div.appendChild(img);
                 container.appendChild(div);
@@ -1165,9 +1174,17 @@
             console.log('Parsed - Wager:', wager, 'Wins:', wins, 'Bets:', bets);
 
             // Update UI
-            document.getElementById('avatar').src = `https://bcgame.nz/api/avatar/${userId}`;
-            document.getElementById('avatar').onerror = function() {
+            const avatarEl = document.getElementById('avatar');
+            avatarEl.src = `https://bcgame.nz/api/avatar/${userId}`;
+            
+            // Fallback to secondary avatar URL
+            avatarEl.onerror = function() {
                 this.src = `https://img2.distributedresourcestorage.com/avatar/${userId}/s`;
+                // If second URL also fails, show emoji fallback
+                this.onerror = function() {
+                    const avatarContainer = this.parentElement;
+                    avatarContainer.innerHTML = '<div style="font-size: 60px; text-align: center; line-height: 120px;">👤</div>';
+                };
             };
             
             document.getElementById('name').textContent = name;
