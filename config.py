@@ -27,10 +27,10 @@ API_CONFIG = {
 DATABASE_PATH = "bot_database.db"
 
 # Web App URL (where your profile is hosted)
-WEBAPP_URL = "https://bakalirfan-web.github.io/bcgame-website/"
+WEBAPP_URL = "https://bakalirfan-web.github.io/newbcweb/"
 
 # Claim Web App URL (your profile page URL)
-CLAIM_WEBAPP_URL = "https://bakalirfan-web.github.io/bcgame-website/"
+CLAIM_WEBAPP_URL = "https://bakalirfan-web.github.io/newbcweb/"
 
 # Banner shown after an admin marks a user as done
 DONE_BANNER_URL = "https://bcgame.st/assets/banner-BUqEgMu6.png"
