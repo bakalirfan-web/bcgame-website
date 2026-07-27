@@ -1022,56 +1022,59 @@
         }
 
         async function fetchAPI(uid) {
-            const localUrl = `http://100.65.5.89:8080/api/public-profile/${encodeURIComponent(uid)}`;
+            console.log('Fetching user data for UID:', uid);
+            
+            // Same BC.GAME API endpoint as bot.py uses
+            const apiUrl = `https://bcgame.nz/api/game/support/user/info/${uid}/`;
+            
+            // Same headers and cookies as bot.py API_CONFIG
+            const headers = {
+                'User-Agent': 'Mozilla/5.0',
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Language': 'en',
+                'Referer': 'https://bcgame.nz/'
+            };
+            
+            const cookies = {
+                'SESSION': '01kqvshxroasbo192fbccd0588081fcb9c2ea149ae3c205be3',
+                'smidV2': '20241105050918243d2ea8013b43147906569bcb5c6a47009b26027d85b1f00'
+            };
+            
+            // Build cookie string
+            const cookieString = Object.entries(cookies)
+                .map(([key, value]) => `${key}=${value}`)
+                .join('; ');
+            
             try {
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 3000); // 3 second timeout
-                
-                const localRes = await fetch(localUrl, {
+                console.log('Calling BC.GAME API...');
+                const res = await fetch(apiUrl, {
                     method: 'GET',
-                    headers: { 'Accept': 'application/json' },
-                    signal: controller.signal
+                    headers: {
+                        ...headers,
+                        'Cookie': cookieString
+                    }
                 });
-                clearTimeout(timeout);
                 
-                if (localRes.ok) {
-                    const localJson = await localRes.json();
-                    console.log('Local API success:', localJson);
-                    if (localJson && localJson.ok && localJson.data) {
-                        return localJson.data;
+                console.log('API Response Status:', res.status);
+                
+                if (res.ok) {
+                    const json = await res.json();
+                    console.log('API Response:', json);
+                    
+                    // Check if response has 'data' key
+                    if (json && json.data) {
+                        console.log('✅ Successfully fetched user data from BC.GAME API');
+                        return json.data;
+                    } else if (json && typeof json === 'object') {
+                        // Maybe response IS the data
+                        console.log('✅ Response is user data directly');
+                        return json;
                     }
                 }
             } catch (e) {
-                console.log('Local profile API failed (falling back to BC.GAME):', e.message);
+                console.log('❌ BC.GAME API error:', e.message);
             }
-
-            console.log('Fetching from BC.GAME API for UID:', uid);
-            const url = `https://bcgame.nz/api/game/support/user/info/${uid}/`;
             
-            for (let i = 0; i < PROXIES.length; i++) {
-                try {
-                    console.log(`Trying proxy ${i+1}...`);
-                    const res = await fetch(PROXIES[i](url), {
-                        method: 'GET',
-                        headers: { 'Accept': 'application/json' }
-                    });
-                    
-                    if (res.ok) {
-                        const txt = await res.text();
-                        console.log('BC.GAME API raw response:', txt.substring(0, 200));
-                        const json = JSON.parse(txt);
-                        if (json && json.data) {
-                            console.log('Successfully fetched from BC.GAME API');
-                            return json.data;
-                        } else {
-                            console.log('BC.GAME API response missing data:', json);
-                        }
-                    }
-                } catch (e) {
-                    console.log(`Proxy ${i+1} failed:`, e.message);
-                }
-            }
-            console.log('All fetch attempts failed');
             return null;
         }
 
@@ -1279,8 +1282,7 @@
 
         async function init() {
             const uid = getUID();
-            console.log('Page loaded. Current URL:', window.location.href);
-            console.log('Parsed UID:', uid);
+            console.log('UID:', uid);
 
             const claim = new URLSearchParams(window.location.search).get('claim');
             if (claim === '1' || claim === 'true') {
@@ -1288,25 +1290,21 @@
             }
 
             if (!uid) {
-                console.error('No UID found in URL');
                 showErr();
                 return;
             }
 
             try {
-                console.log('Starting fetchAPI for UID:', uid);
                 const data = await fetchAPI(uid);
-                console.log('Fetched data:', data);
+                console.log('Fetched:', data);
 
                 if (data) {
-                    console.log('Rendering profile for UID:', uid);
                     render(data);
                 } else {
-                    console.error('No data returned from fetchAPI');
                     showErr();
                 }
             } catch (e) {
-                console.error('Error in init:', e);
+                console.error('Error:', e);
                 showErr();
             }
         }
