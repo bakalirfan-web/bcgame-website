@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#102224" />
+  <title>Northline Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="texture" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="logo" href="#">Northline</a>
+    <nav>
+      <a href="#services">Services</a>
+      <a href="#work">Work</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a class="header-btn" href="#contact">Book a Call</a>
+  </header>
+
+  <main>
+    <section class="hero reveal">
+      <p class="eyebrow">Creative digital studio</p>
+      <h1>We build websites that feel alive and convert visitors into clients.</h1>
+      <p class="subtitle">Design, content, and front-end crafted as one system. Fast, expressive, and built for mobile first.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#work">View Projects</a>
+        <a class="btn btn-ghost" href="#services">Explore Services</a>
+      </div>
+      <div class="hero-stats">
+        <article>
+          <strong>62+</strong>
+          <span>websites launched</span>
+        </article>
+        <article>
+          <strong>4.9/5</strong>
+          <span>average client rating</span>
+        </article>
+        <article>
+          <strong>38%</strong>
+          <span>average conversion lift</span>
+        </article>
+      </div>
+    </section>
+
+    <section id="services" class="section reveal">
+      <div class="section-heading">
+        <p class="eyebrow">Services</p>
+        <h2>Everything needed to go from idea to launch.</h2>
+      </div>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Website Design</h3>
+          <p>Distinct visual systems, clear messaging, and layouts that adapt smoothly across devices.</p>
+        </article>
+        <article class="card">
+          <h3>Front-End Build</h3>
+          <p>Clean, lightweight code with performance-focused interactions and smooth animations.</p>
+        </article>
+        <article class="card">
+          <h3>Growth Optimization</h3>
+          <p>Conversion-oriented structure, analytics setup, and post-launch experiments.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="work" class="section section-accent reveal">
+      <div class="section-heading">
+        <p class="eyebrow">Featured work</p>
+        <h2>Recent launch snapshots</h2>
+      </div>
+      <div class="work-grid">
+        <article class="work-card">
+          <p class="tag">Fintech</p>
+          <h3>Atlas Ledger</h3>
+          <p>Rebuilt onboarding journey and improved qualified lead conversion by 41%.</p>
+        </article>
+        <article class="work-card">
+          <p class="tag">Health</p>
+          <h3>Helio Clinic</h3>
+          <p>Designed trust-first landing pages and reduced bounce rate by 33%.</p>
+        </article>
+        <article class="work-card">
+          <p class="tag">SaaS</p>
+          <h3>Pulseboard</h3>
+          <p>Launched a modular marketing site with dynamic feature storytelling blocks.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="contact" class="section contact reveal">
+      <div>
+        <p class="eyebrow">Let us build yours</p>
+        <h2>Ready for a website upgrade?</h2>
+        <p>Share your business goals and we will propose a website plan in 24 hours.</p>
+      </div>
+      <form class="contact-form" onsubmit="event.preventDefault(); window.showToast('Thanks! We will contact you shortly.');">
+        <label>
+          Name
+          <input type="text" required placeholder="Your name" />
+        </label>
+        <label>
+          Email
+          <input type="email" required placeholder="you@example.com" />
+        </label>
+        <label>
+          Project details
+          <textarea rows="4" placeholder="Tell us what you need"></textarea>
+        </label>
+        <button class="btn btn-primary" type="submit">Send Request</button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Northline Studio</p>
+    <p>Built for bold brands.</p>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+[Unit]
+Description=BC.GAME Telegram Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=myserver
+WorkingDirectory=/home/myserver/DATA/bcgame/TGbot/newbot
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/myserver/DATA/bcgame/TGbot/newbot/.venv/bin/python bot.py
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

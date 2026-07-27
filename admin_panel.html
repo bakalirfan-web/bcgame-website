@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC.GAME Bot Admin</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #151817;
+            --surface: #202523;
+            --surface-2: #2a302d;
+            --line: #3a433f;
+            --text: #f3f7f2;
+            --muted: #9fa9a4;
+            --green: #39d98a;
+            --gold: #f4c84a;
+            --red: #ff6b6b;
+            --blue: #65a9ff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        button,
+        input,
+        textarea {
+            font: inherit;
+        }
+
+        button,
+        .button-link {
+            border: 1px solid var(--line);
+            background: var(--surface-2);
+            color: var(--text);
+            border-radius: 6px;
+            min-height: 38px;
+            padding: 0 12px;
+            cursor: pointer;
+        }
+
+        .button-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        button.primary {
+            background: #215d40;
+            border-color: #2f875c;
+        }
+
+        button.warning {
+            background: #594b1e;
+            border-color: #826d28;
+        }
+
+        button.danger {
+            background: #5c262b;
+            border-color: #8b343c;
+        }
+
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        button.busy {
+            position: relative;
+            overflow: hidden;
+            opacity: 1;
+        }
+
+        button.busy::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 46%;
+            height: 3px;
+            background: var(--green);
+            animation: buttonProgress 900ms linear infinite;
+        }
+
+        @keyframes buttonProgress {
+            from { transform: translateX(-120%); }
+            to { transform: translateX(260%); }
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            background: #101312;
+            color: var(--text);
+            border-radius: 6px;
+            padding: 10px 11px;
+            outline: none;
+        }
+
+        textarea {
+            min-height: 96px;
+            resize: vertical;
+        }
+
+        label {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .shell {
+            display: grid;
+            grid-template-rows: auto auto 1fr;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--line);
+            background: #111413;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        .mark {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            background: var(--gold);
+            color: #151817;
+            display: grid;
+            place-items: center;
+            font-weight: 900;
+        }
+
+        .status {
+            color: var(--muted);
+            font-size: 13px;
+            min-height: 18px;
+            text-align: right;
+        }
+
+        .login {
+            max-width: 420px;
+            margin: 14vh auto 0;
+            padding: 22px;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            border-radius: 8px;
+        }
+
+        .login h1 {
+            margin: 0 0 18px;
+            font-size: 22px;
+        }
+
+        .login .row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+        }
+
+        .dashboard {
+            display: none;
+            gap: 14px;
+            padding: 14px;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(8, minmax(110px, 1fr));
+            gap: 10px;
+        }
+
+        .metric {
+            border: 1px solid var(--line);
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 12px;
+            min-height: 76px;
+        }
+
+        .metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .metric strong {
+            font-size: 24px;
+        }
+
+        .tier-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .tier-filters button {
+            min-height: 34px;
+            color: var(--muted);
+        }
+
+        .tier-filters button.active {
+            color: var(--text);
+            border-color: var(--green);
+            background: #1f4d38;
+        }
+
+        .workbench {
+            display: grid;
+            grid-template-columns: minmax(280px, 360px) 1fr;
+            gap: 14px;
+            min-height: 0;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            background: var(--surface);
+            border-radius: 8px;
+            min-width: 0;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 15px;
+        }
+
+        .panel-body {
+            padding: 12px;
+        }
+
+        .form-stack {
+            display: grid;
+            gap: 12px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .broadcast-job {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 13px;
+            white-space: pre-line;
+        }
+
+        .users-panel {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            min-height: 610px;
+        }
+
+        .users-toolbar {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 10px;
+            padding: 12px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .table-wrap {
+            overflow: auto;
+            max-height: calc(100vh - 240px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255,255,255,.06);
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        th {
+            color: var(--muted);
+            font-weight: 700;
+            background: #1a1e1c;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 220px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #323a36;
+            object-fit: cover;
+            flex: 0 0 auto;
+        }
+
+        .subtle {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 24px;
+            padding: 0 8px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .pill.done {
+            color: var(--green);
+            border-color: rgba(57,217,138,.5);
+        }
+
+        .pill.pending {
+            color: var(--gold);
+            border-color: rgba(244,200,74,.5);
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .toast {
+            position: fixed;
+            top: 68px;
+            right: 18px;
+            z-index: 50;
+            min-width: 220px;
+            max-width: min(360px, calc(100vw - 36px));
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(57,217,138,.45);
+            background: #173424;
+            color: var(--text);
+            box-shadow: 0 12px 32px rgba(0,0,0,.28);
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+            transition: opacity 160ms ease, transform 160ms ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            border-color: rgba(255,107,107,.55);
+            background: #3c1f23;
+        }
+
+        @media (max-width: 1050px) {
+            .metrics {
+                grid-template-columns: repeat(4, minmax(120px, 1fr));
+            }
+
+            .workbench {
+                grid-template-columns: 1fr;
+            }
+
+            .table-wrap {
+                max-height: 70vh;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .status {
+                text-align: left;
+            }
+
+            .metrics {
+                grid-template-columns: repeat(2, minmax(120px, 1fr));
+            }
+
+            .users-toolbar,
+            .login .row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header class="topbar">
+            <div class="brand">
+                <div class="mark">B</div>
+                <div>BC.GAME Bot Admin</div>
+            </div>
+            <div class="status" id="status"></div>
+        </header>
+
+        <section class="login" id="login">
+            <h1>Admin Access</h1>
+            <label for="adminKey">Access key</label>
+            <div class="row">
+                <input id="adminKey" type="password" autocomplete="current-password">
+                <button class="primary" id="loginButton">Open</button>
+            </div>
+        </section>
+
+        <main class="dashboard" id="dashboard">
+            <section class="metrics" id="metrics"></section>
+            <section class="tier-filters" id="tierFilters"></section>
+
+            <section class="workbench">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Actions</h2>
+                        <button id="refreshButton">Refresh</button>
+                    </div>
+                    <div class="panel-body form-stack">
+                        <div>
+                            <label for="targetUid">BC.GAME UID</label>
+                            <input id="targetUid" inputmode="numeric">
+                        </div>
+                        <div>
+                            <label for="directMessage">Send message</label>
+                            <textarea id="directMessage"></textarea>
+                            <div class="button-row">
+                                <button class="primary" id="sendButton">Send</button>
+                                <button class="warning" id="markDoneButton">Mark Done</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="broadcastText">Broadcast</label>
+                            <textarea id="broadcastText"></textarea>
+                            <button class="danger" id="broadcastButton">Start Broadcast</button>
+                            <div class="broadcast-job" id="broadcastJob"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel users-panel">
+                    <div class="users-toolbar">
+                        <input id="searchInput" placeholder="Search users, UIDs, Telegram IDs">
+                        <button id="searchButton">Search</button>
+                        <button id="syncButton">Sync API</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Telegram</th>
+                                    <th>BC UID</th>
+                                    <th>Level</th>
+                                    <th>Verified</th>
+                                    <th>Done</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        const state = {
+            key: localStorage.getItem('bc_admin_key') || '',
+            users: [],
+            tier: 'all',
+            pollTimer: null,
+        };
+
+        const $ = (id) => document.getElementById(id);
+        const tiers = [
+            ['all', 'All'],
+            ['beginner', 'Beginner'],
+            ['bronze', 'Bronze'],
+            ['silver', 'Silver'],
+            ['gold', 'Gold'],
+            ['platinum', 'Platinum'],
+            ['diamond', 'Diamond'],
+        ];
+        let toastTimer = null;
+
+        function setStatus(message, isError = false) {
+            $('status').textContent = message || '';
+            $('status').style.color = isError ? 'var(--red)' : 'var(--muted)';
+        }
+
+        function showToast(message, isError = false) {
+            const toast = $('toast');
+            toast.textContent = message;
+            toast.classList.toggle('error', isError);
+            toast.classList.add('show');
+            window.clearTimeout(toastTimer);
+            toastTimer = window.setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        async function withButtonProgress(button, busyText, task) {
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.classList.add('busy');
+            button.textContent = busyText;
+            try {
+                return await task();
+            } finally {
+                button.disabled = false;
+                button.classList.remove('busy');
+                button.textContent = originalText;
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        async function api(path, options = {}) {
+            const headers = Object.assign({
+                'X-Admin-Key': state.key,
+            }, options.headers || {});
+
+            if (options.body && !(options.body instanceof FormData)) {
+                headers['Content-Type'] = 'application/json';
+            }
+
+            const response = await fetch(path, {
+                cache: 'no-store',
+                ...options,
+                headers,
+            });
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+                throw new Error(data.error || `Request failed: ${response.status}`);
+            }
+            return data;
+        }
+
+        function showDashboard() {
+            $('login').style.display = 'none';
+            $('dashboard').style.display = 'grid';
+        }
+
+        function showLogin() {
+            $('login').style.display = 'block';
+            $('dashboard').style.display = 'none';
+            $('adminKey').value = state.key;
+        }
+
+        function renderMetrics(stats) {
+            const items = [
+                ['Users', stats.total_users],
+                ['Eligible', stats.eligible_users],
+                ['Verified', stats.verified_users],
+                ['Pending', stats.pending_users],
+                ['Done', stats.marked_done_users],
+                ['Active', stats.active_users],
+                ['Claims', stats.total_claims],
+                ['Highest', stats.highest_level],
+            ];
+            $('metrics').innerHTML = items.map(([label, value]) => `
+                <div class="metric">
+                    <span>${escapeHtml(label)}</span>
+                    <strong>${escapeHtml(value ?? 0)}</strong>
+                </div>
+            `).join('');
+        }
+
+        function getUserTier(user) {
+            const levelName = String(user.level_name || '').toUpperCase();
+            if (levelName.includes('DIAMOND') || levelName.includes('SVIP')) return 'diamond';
+            if (levelName.includes('PLATINUM')) return 'platinum';
+            if (levelName.includes('GOLD')) return 'gold';
+            if (levelName.includes('SILVER')) return 'silver';
+            if (levelName.includes('BRONZE')) return 'bronze';
+
+            if (user.vip_tier && user.vip_tier !== 'unknown') {
+                return String(user.vip_tier).toLowerCase();
+            }
+
+            const level = Number(user.level) || Number((levelName.match(/\d+/) || [0])[0]) || 0;
+            if (levelName.includes('SVIP') || level >= 60) return 'diamond';
+            if (level >= 38) return 'platinum';
+            if (level >= 22) return 'gold';
+            if (level >= 8) return 'silver';
+            if (level > 0) return 'bronze';
+            return 'beginner';
+        }
+
+        function renderTierFilters(users) {
+            const counts = Object.fromEntries(tiers.map(([id]) => [id, 0]));
+            counts.all = users.length;
+            users.forEach((user) => {
+                const tier = getUserTier(user);
+                counts[tier] = (counts[tier] || 0) + 1;
+            });
+
+            $('tierFilters').innerHTML = tiers.map(([id, label]) => `
+                <button class="${state.tier === id ? 'active' : ''}" data-tier="${id}">
+                    ${escapeHtml(label)} ${escapeHtml(counts[id] || 0)}
+                </button>
+            `).join('');
+        }
+
+        function filteredUsers() {
+            if (state.tier === 'all') return state.users;
+            return state.users.filter((user) => getUserTier(user) === state.tier);
+        }
+
+        function renderUsers(users) {
+            if (!users.length) {
+                $('usersBody').innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="subtle">No users found for this filter.</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            $('usersBody').innerHTML = users.map((user) => {
+                const done = Number(user.marked_done) === 1;
+                const verified = Number(user.verified) === 1;
+                const profileUrl = user.profile_url || `userprofile.html?uid=${encodeURIComponent(user.bc_uid || '')}`;
+                return `
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img class="avatar" src="${escapeHtml(user.avatar_url)}" alt="" onerror="this.style.visibility='hidden'">
+                                <div>
+                                    <div>${escapeHtml(user.bc_username)}</div>
+                                    <div class="subtle">${escapeHtml(user.vip_tier || '')}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>@${escapeHtml(user.telegram_username || 'N/A')}</div>
+                            <div class="subtle">${escapeHtml(user.telegram_id)}</div>
+                        </td>
+                        <td>${escapeHtml(user.bc_uid)}</td>
+                        <td>${escapeHtml(user.level_name || user.level)}</td>
+                        <td><span class="pill ${verified ? 'done' : 'pending'}">${verified ? 'Verified' : 'Pending'}</span></td>
+                        <td><span class="pill ${done ? 'done' : ''}">${done ? 'Done' : 'Active'}</span></td>
+                        <td>
+                            <div class="row-actions">
+                                <a class="button-link" href="${escapeHtml(profileUrl)}" target="_blank" rel="noopener">Profile</a>
+                                <button data-action="refresh" data-uid="${escapeHtml(user.bc_uid)}">Refresh API</button>
+                                <button data-action="fill" data-uid="${escapeHtml(user.bc_uid)}">Send</button>
+                                <button data-action="done" data-uid="${escapeHtml(user.bc_uid)}" class="warning">Done</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadAll() {
+            setStatus('Loading...');
+            const query = encodeURIComponent($('searchInput').value.trim());
+            const [statsData, usersData] = await Promise.all([
+                api('/api/stats'),
+                api(`/api/users?search=${query}`),
+            ]);
+            state.users = usersData.users;
+            renderMetrics(statsData.stats);
+            renderTierFilters(state.users);
+            renderUsers(filteredUsers());
+            setStatus(`Loaded ${filteredUsers().length} of ${state.users.length} users`);
+        }
+
+        async function login() {
+            state.key = $('adminKey').value.trim();
+            localStorage.setItem('bc_admin_key', state.key);
+            showDashboard();
+            try {
+                await loadAll();
+            } catch (error) {
+                setStatus(error.message, true);
+                showLogin();
+            }
+        }
+
+        async function sendDirect() {
+            const bcUid = $('targetUid').value.trim();
+            const text = $('directMessage').value.trim();
+            setStatus('Sending...');
+            await api('/api/send-message', {
+                method: 'POST',
+                body: JSON.stringify({ bc_uid: bcUid, text }),
+            });
+            setStatus(`Message sent to UID ${bcUid}`);
+            showToast('Sent');
+        }
+
+        async function markDone(bcUid = $('targetUid').value.trim()) {
+            if (!bcUid) {
+                setStatus('Enter a BC.GAME UID', true);
+                return;
+            }
+            setStatus('Marking done...');
+            const data = await api('/api/mark-done', {
+                method: 'POST',
+                body: JSON.stringify({ bc_uid: bcUid }),
+            });
+            const notifyText = data.notified ? 'banner sent' : `banner failed: ${data.error || 'unknown error'}`;
+            setStatus(`UID ${bcUid} marked done, cleared ${data.deleted_messages} messages, ${notifyText}`);
+            showToast(data.notified ? 'Marked done and sent' : 'Marked done');
+            await loadAll();
+        }
+
+        async function refreshUser(bcUid) {
+            if (!bcUid) {
+                setStatus('Enter a BC.GAME UID', true);
+                return;
+            }
+            setStatus(`Refreshing UID ${bcUid} from BC.GAME...`);
+            const data = await api('/api/refresh-user', {
+                method: 'POST',
+                body: JSON.stringify({ bc_uid: bcUid }),
+            });
+
+            const index = state.users.findIndex((user) => String(user.bc_uid) === String(bcUid));
+            if (index >= 0) {
+                state.users[index] = data.user;
+            } else {
+                state.users.unshift(data.user);
+            }
+            renderTierFilters(state.users);
+            renderUsers(filteredUsers());
+            setStatus(`Refreshed ${data.user.bc_username}: ${data.user.level_name}`);
+            showToast(`Refreshed: ${data.user.level_name}`);
+        }
+
+        function renderBroadcastJob(job) {
+            const latest = (job.latest_batch || []).map((item) => `- ${item}`).join('\n') || 'Waiting for first batch...';
+            $('broadcastJob').textContent =
+                `Status: ${job.status}\nSent: ${job.sent}/${job.total} | Failed: ${job.failed}\nLatest batch:\n${latest}`;
+        }
+
+        async function pollBroadcast(jobId) {
+            window.clearInterval(state.pollTimer);
+            state.pollTimer = window.setInterval(async () => {
+                try {
+                    const data = await api(`/api/broadcast/${jobId}`);
+                    renderBroadcastJob(data.job);
+                    if (data.job.status === 'complete') {
+                        window.clearInterval(state.pollTimer);
+                        setStatus('Broadcast complete');
+                        await loadAll();
+                    }
+                } catch (error) {
+                    window.clearInterval(state.pollTimer);
+                    setStatus(error.message, true);
+                }
+            }, 1800);
+        }
+
+        async function startBroadcast() {
+            const text = $('broadcastText').value.trim();
+            setStatus('Starting broadcast...');
+            const data = await api('/api/broadcast', {
+                method: 'POST',
+                body: JSON.stringify({ text }),
+            });
+            renderBroadcastJob(data.job);
+            setStatus(`Broadcast job ${data.job.id} started`);
+            showToast('Broadcast started');
+            await pollBroadcast(data.job.id);
+        }
+
+        function renderSyncJob(job) {
+            const latest = job.latest
+                ? `${job.latest.bc_username || job.latest.bc_uid}: ${job.latest.level_name} (${job.latest.vip_tier})`
+                : 'Waiting for first refresh...';
+            setStatus(`Sync API: ${job.synced}/${job.total} refreshed, ${job.failed} failed. Latest: ${latest}`);
+        }
+
+        async function pollSync(jobId) {
+            const timer = window.setInterval(async () => {
+                try {
+                    const data = await api(`/api/sync-users/${jobId}`);
+                    renderSyncJob(data.job);
+                    if (data.job.status === 'complete') {
+                        window.clearInterval(timer);
+                        showToast('API sync complete');
+                        await loadAll();
+                    }
+                } catch (error) {
+                    window.clearInterval(timer);
+                    setStatus(error.message, true);
+                    showToast(error.message, true);
+                }
+            }, 2200);
+        }
+
+        async function startSync() {
+            setStatus('Starting BC.GAME API sync...');
+            const data = await api('/api/sync-users', {
+                method: 'POST',
+                body: JSON.stringify({}),
+            });
+            renderSyncJob(data.job);
+            showToast('API sync started');
+            await pollSync(data.job.id);
+        }
+
+        $('loginButton').addEventListener('click', login);
+        $('refreshButton').addEventListener('click', () => loadAll().catch((error) => setStatus(error.message, true)));
+        $('searchButton').addEventListener('click', () => loadAll().catch((error) => setStatus(error.message, true)));
+        $('syncButton').addEventListener('click', (event) => {
+            withButtonProgress(event.currentTarget, 'Syncing...', startSync)
+                .catch((error) => {
+                    setStatus(error.message, true);
+                    showToast(error.message, true);
+                });
+        });
+        $('sendButton').addEventListener('click', (event) => {
+            withButtonProgress(event.currentTarget, 'Sending...', sendDirect)
+                .catch((error) => {
+                    setStatus(error.message, true);
+                    showToast(error.message, true);
+                });
+        });
+        $('markDoneButton').addEventListener('click', (event) => {
+            withButtonProgress(event.currentTarget, 'Marking...', () => markDone())
+                .catch((error) => {
+                    setStatus(error.message, true);
+                    showToast(error.message, true);
+                });
+        });
+        $('broadcastButton').addEventListener('click', (event) => {
+            withButtonProgress(event.currentTarget, 'Starting...', startBroadcast)
+                .catch((error) => {
+                    setStatus(error.message, true);
+                    showToast(error.message, true);
+                });
+        });
+        $('searchInput').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                loadAll().catch((error) => setStatus(error.message, true));
+            }
+        });
+        $('tierFilters').addEventListener('click', (event) => {
+            const button = event.target.closest('button[data-tier]');
+            if (!button) return;
+            state.tier = button.dataset.tier;
+            renderTierFilters(state.users);
+            renderUsers(filteredUsers());
+            setStatus(`Showing ${filteredUsers().length} ${state.tier === 'all' ? 'users' : state.tier + ' users'}`);
+        });
+        $('usersBody').addEventListener('click', (event) => {
+            const button = event.target.closest('button[data-action]');
+            if (!button) return;
+            const uid = button.dataset.uid;
+            $('targetUid').value = uid;
+            if (button.dataset.action === 'done') {
+                withButtonProgress(button, 'Marking...', () => markDone(uid))
+                    .catch((error) => {
+                        setStatus(error.message, true);
+                        showToast(error.message, true);
+                    });
+            } else if (button.dataset.action === 'refresh') {
+                withButtonProgress(button, 'Refreshing...', () => refreshUser(uid))
+                    .catch((error) => {
+                        setStatus(error.message, true);
+                        showToast(error.message, true);
+                    });
+            } else {
+                showToast(`UID ${uid} selected`);
+            }
+        });
+
+        if (state.key) {
+            showDashboard();
+            loadAll().catch(() => showLogin());
+        } else {
+            showLogin();
+        }
+    </script>
+</body>
+</html>
