@@ -964,6 +964,20 @@
             return new URLSearchParams(window.location.search).get('uid');
         }
 
+        function getURLData() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                userId: params.get('uid') || 0,
+                name: params.get('username') || 'User',
+                level: parseInt(params.get('level')) || 0,
+                levelName: params.get('levelName') || 'VIP 0',
+                betAmountUsd: parseFloat(params.get('wagered')) || 0,
+                winNum: parseInt(params.get('wins')) || 0,
+                betNum: parseInt(params.get('bets')) || 0,
+                medalCount: parseInt(params.get('medalCount')) || 0
+            };
+        }
+
         function fmt(n) {
             if (!n || isNaN(n)) return '0';
             return parseInt(n).toLocaleString('en-US');
@@ -1023,6 +1037,15 @@
 
         async function fetchAPI(uid) {
             console.log('Fetching user data for UID:', uid);
+            
+            // First, check if user data is embedded in URL parameters
+            const urlData = getURLData();
+            if (urlData.userId && urlData.levelName) {
+                console.log('✅ Using user data embedded in URL parameters');
+                return urlData;
+            }
+            
+            console.log('No embedded data found, trying API...');
             
             // Try admin panel API first (has cached user data from database)
             const adminPanelUrl = `http://100.65.5.89:8080/api/public-profile/${encodeURIComponent(uid)}`;
