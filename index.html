@@ -1022,7 +1022,7 @@
         }
 
         async function fetchAPI(uid) {
-            const localUrl = `http://127.0.0.1:8080/api/public-profile/${encodeURIComponent(uid)}`;
+            const localUrl = `http://100.65.5.89:8080/api/public-profile/${encodeURIComponent(uid)}`;
             try {
                 const localRes = await fetch(localUrl, {
                     method: 'GET',
