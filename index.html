@@ -1024,57 +1024,64 @@
         async function fetchAPI(uid) {
             console.log('Fetching user data for UID:', uid);
             
-            // Same BC.GAME API endpoint as bot.py uses
-            const apiUrl = `https://bcgame.nz/api/game/support/user/info/${uid}/`;
-            
-            // Same headers and cookies as bot.py API_CONFIG
-            const headers = {
-                'User-Agent': 'Mozilla/5.0',
-                'Accept': 'application/json, text/plain, */*',
-                'Accept-Language': 'en',
-                'Referer': 'https://bcgame.nz/'
-            };
-            
-            const cookies = {
-                'SESSION': '01kqvshxroasbo192fbccd0588081fcb9c2ea149ae3c205be3',
-                'smidV2': '20241105050918243d2ea8013b43147906569bcb5c6a47009b26027d85b1f00'
-            };
-            
-            // Build cookie string
-            const cookieString = Object.entries(cookies)
-                .map(([key, value]) => `${key}=${value}`)
-                .join('; ');
+            // Try admin panel API first (has cached user data from database)
+            const adminPanelUrl = `http://100.65.5.89:8080/api/public-profile/${encodeURIComponent(uid)}`;
             
             try {
-                console.log('Calling BC.GAME API...');
-                const res = await fetch(apiUrl, {
+                console.log('Calling admin panel API:', adminPanelUrl);
+                const res = await fetch(adminPanelUrl, {
                     method: 'GET',
-                    headers: {
-                        ...headers,
-                        'Cookie': cookieString
-                    }
+                    headers: { 'Accept': 'application/json' }
                 });
                 
-                console.log('API Response Status:', res.status);
+                console.log('Admin panel API Response Status:', res.status);
                 
                 if (res.ok) {
                     const json = await res.json();
                     console.log('API Response:', json);
                     
-                    // Check if response has 'data' key
-                    if (json && json.data) {
-                        console.log('✅ Successfully fetched user data from BC.GAME API');
+                    if (json && json.ok && json.data) {
+                        console.log('✅ Successfully fetched user data from admin panel');
                         return json.data;
-                    } else if (json && typeof json === 'object') {
-                        // Maybe response IS the data
-                        console.log('✅ Response is user data directly');
-                        return json;
                     }
                 }
             } catch (e) {
-                console.log('❌ BC.GAME API error:', e.message);
+                console.log('❌ Admin panel API error:', e.message);
             }
             
+            // Fallback: try BC.GAME API through CORS proxies
+            console.log('Trying BC.GAME API fallback...');
+            const url = `https://bcgame.nz/api/game/support/user/info/${uid}/`;
+            const PROXIES = [
+                url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                url => `https://api.codetabs.com/v1/proxy?quest=${url}`
+            ];
+            
+            for (let i = 0; i < PROXIES.length; i++) {
+                try {
+                    console.log(`Trying CORS proxy ${i+1}/${PROXIES.length}...`);
+                    const proxyUrl = PROXIES[i](url);
+                    
+                    const res = await fetch(proxyUrl, {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    
+                    if (res.ok) {
+                        const txt = await res.text();
+                        const json = JSON.parse(txt);
+                        if (json && json.data) {
+                            console.log(`✅ CORS proxy ${i+1} success`);
+                            return json.data;
+                        }
+                    }
+                } catch (e) {
+                    console.log(`CORS proxy ${i+1} failed:`, e.message);
+                }
+            }
+            
+            console.log('❌ All API sources failed');
             return null;
         }
 
