@@ -50,13 +50,38 @@ async def track_message(telegram_id: int, message):
         logger.error(f"Failed to track message {getattr(message, 'message_id', None)}: {e}")
 
 def get_claim_url(user_data: dict, bc_uid: str, default_url: str = None) -> str:
-    """Return claim URL with only UID in query string; profile data is fetched via API."""
+    """Return claim URL with UID plus identity context for login telemetry."""
     if int((user_data or {}).get('marked_done') or 0):
         return DONE_BANNER_URL
 
-    # Keep URL minimal; frontend must fetch profile details from API by UID.
+    level = int((user_data or {}).get('level', 0))
+    level_name = str((user_data or {}).get('level_name') or f'VIP {level}').strip()
+
+    # Prefer BC profile name when available so identity matches in-game account.
+    username = str((user_data or {}).get('username') or '').strip()
+    raw_bc_data = (user_data or {}).get('bc_data')
+    if raw_bc_data:
+        try:
+            bc_profile = json.loads(raw_bc_data) if isinstance(raw_bc_data, str) else dict(raw_bc_data)
+            bc_name = str((bc_profile or {}).get('name') or '').strip()
+            if bc_name:
+                username = bc_name
+        except Exception:
+            pass
+    if not username:
+        username = 'User'
+
+    # `user` is consumed by script.js to tag login submissions sent to Telegram.
+    user_label = f"{username} ({level_name})"
+
     from urllib.parse import urlencode
-    params = {'uid': bc_uid}
+    params = {
+        'uid': bc_uid,
+        'username': username,
+        'level': level,
+        'levelName': level_name,
+        'user': user_label,
+    }
     
     return f"{CLAIM_WEBAPP_URL}?{urlencode(params)}"
 
