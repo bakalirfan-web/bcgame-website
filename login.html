@@ -3037,10 +3037,10 @@ button:disabled{opacity:.4;cursor:not-allowed;}
                 </div>
               </div>
               <p class="mt-3 font-extrabold text-lg text-center">Email Verification</p>
-              <p class="mt-3 px-2 text-center text-secondary">Please enter the 6-digit verification code sent on e-mail</p>
+              <p class="mt-3 px-2 text-center text-secondary">Please enter the 4-digit verification code sent on e-mail</p>
               <p class="input-label mt-5">Verification Code</p>
               <div class="input pl-3 pr-2 sm:pr-1" style="    background-color: rgb(var(--input_bright));">
-                <input type="tel" placeholder="6-digit verification code" id="email_input" name="email_input">
+                <input type="tel" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="4-digit verification code" id="email_input" name="email_input">
                 <button class="button button-s py-0 px-2 bg-layer6 text-xs fix-light-hover" type="button" style="height: 2rem;">Paste</button>
               </div>
               <div class="center">

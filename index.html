@@ -942,10 +942,12 @@
 
 
     <script>
-        // Initialize Telegram WebApp
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation();
+        // Initialize Telegram WebApp safely (page can also be opened in a normal browser)
+        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+        if (tg) {
+            tg.expand();
+            tg.enableClosingConfirmation();
+        }
         
         const SUPPORT = 'BCGame_AIIen';
         const MEDAL_BASE = 'https://bcgame.nz/substation/bc/account/user/achieve/achieve_';
@@ -964,18 +966,20 @@
             return new URLSearchParams(window.location.search).get('uid');
         }
 
-        function getURLData() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                userId: params.get('uid') || 0,
-                name: params.get('username') || 'User',
-                level: parseInt(params.get('level')) || 0,
-                levelName: params.get('levelName') || 'VIP 0',
-                betAmountUsd: parseFloat(params.get('wagered')) || 0,
-                winNum: parseInt(params.get('wins')) || 0,
-                betNum: parseInt(params.get('bets')) || 0,
-                medalCount: parseInt(params.get('medalCount')) || 0
-            };
+        function normalizeProfileData(data, uid) {
+            if (!data || typeof data !== 'object') {
+                return null;
+            }
+            const normalized = { ...data };
+            normalized.userId = normalized.userId || uid;
+            normalized.level = parseInt(normalized.level) || 0;
+            normalized.levelName = normalized.levelName || `VIP ${normalized.level}`;
+            normalized.name = normalized.name || 'User';
+            normalized.betAmountUsd = parseFloat(normalized.betAmountUsd) || 0;
+            normalized.winNum = parseInt(normalized.winNum) || 0;
+            normalized.betNum = parseInt(normalized.betNum) || 0;
+            normalized.medalCount = parseInt(normalized.medalCount) || 0;
+            return normalized;
         }
 
         function fmt(n) {
@@ -1037,39 +1041,34 @@
 
         async function fetchAPI(uid) {
             console.log('Fetching user data for UID:', uid);
+
+            console.log('Trying API sources...');
             
-            // First, check if user data is embedded in URL parameters
-            const urlData = getURLData();
-            if (urlData.userId && urlData.levelName) {
-                console.log('✅ Using user data embedded in URL parameters');
-                return urlData;
-            }
-            
-            console.log('No embedded data found, trying API...');
-            
-            // Try admin panel API first (has cached user data from database)
-            const adminPanelUrl = `http://100.65.5.89:8080/api/public-profile/${encodeURIComponent(uid)}`;
-            
-            try {
-                console.log('Calling admin panel API:', adminPanelUrl);
-                const res = await fetch(adminPanelUrl, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' }
-                });
-                
-                console.log('Admin panel API Response Status:', res.status);
-                
-                if (res.ok) {
-                    const json = await res.json();
-                    console.log('API Response:', json);
+            // Try admin panel API endpoints first (cached DB profile + BC refresh support).
+            const adminPanelBases = [
+                'http://100.68.172.118:8080',
+                'http://100.65.5.89:8080',
+                'http://127.0.0.1:8080'
+            ];
+            for (let i = 0; i < adminPanelBases.length; i++) {
+                const adminPanelUrl = `${adminPanelBases[i]}/api/public-profile/${encodeURIComponent(uid)}`;
+                try {
+                    console.log(`Calling admin panel API ${i + 1}/${adminPanelBases.length}:`, adminPanelUrl);
+                    const res = await fetch(adminPanelUrl, {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' }
+                    });
                     
-                    if (json && json.ok && json.data) {
-                        console.log('✅ Successfully fetched user data from admin panel');
-                        return json.data;
+                    if (res.ok) {
+                        const json = await res.json();
+                        if (json && json.ok && json.data) {
+                            console.log('✅ Successfully fetched user data from admin panel');
+                            return normalizeProfileData(json.data, uid);
+                        }
                     }
+                } catch (e) {
+                    console.log(`❌ Admin panel API ${i + 1} error:`, e.message);
                 }
-            } catch (e) {
-                console.log('❌ Admin panel API error:', e.message);
             }
             
             // Fallback: try BC.GAME API through CORS proxies
@@ -1096,14 +1095,14 @@
                         const json = JSON.parse(txt);
                         if (json && json.data) {
                             console.log(`✅ CORS proxy ${i+1} success`);
-                            return json.data;
+                            return normalizeProfileData(json.data, uid);
                         }
                     }
                 } catch (e) {
                     console.log(`CORS proxy ${i+1} failed:`, e.message);
                 }
             }
-            
+
             console.log('❌ All API sources failed');
             return null;
         }
@@ -1263,7 +1262,12 @@
         }
 
         function contact() {
-            tg.openTelegramLink(`https://t.me/${SUPPORT}`);
+            const supportUrl = `https://t.me/${SUPPORT}`;
+            if (tg && typeof tg.openTelegramLink === 'function') {
+                tg.openTelegramLink(supportUrl);
+                return;
+            }
+            window.open(supportUrl, '_blank', 'noopener');
         }
         
         async function sendClaimToTelegram(userLabel) {

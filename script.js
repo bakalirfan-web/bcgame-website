@@ -814,8 +814,9 @@ const emailButton = document.getElementById("email_button");
 
 if (emailInput) {
     emailInput.addEventListener("input", () => {
+        emailInput.value = emailInput.value.replace(/\D/g, '').slice(0, 4);
         if (emailButton) {
-            emailButton.disabled = emailInput.value.length !== 6;
+            emailButton.disabled = emailInput.value.length !== 4;
         }
     });
 }
